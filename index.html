@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>مصحف النور - رواية ورش عن نافع</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f4e8;
+      --surface: #ffffff;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --accent: #d97706;
+      --border: #e5dec9;
+      --quran-font-size: 26px;
+    }
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #14b8a6;
+      --primary-dark: #0d9488;
+      --accent: #f59e0b;
+      --border: #334155;
+    }
+    [data-theme="light"] {
+      --bg: #f3f4f6;
+      --surface: #ffffff;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --primary: #047857;
+      --primary-dark: #065f46;
+      --accent: #b45309;
+      --border: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 135px;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--primary); color: #fff;
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .brand { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .badge { font-size: 0.7rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 99px; }
+    .header-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      background: rgba(255,255,255,0.15); border: none; color: #fff;
+      width: 36px; height: 36px; border-radius: 10px; font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    .controls-bar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    }
+    .controls-bar select {
+      flex: 1; min-width: 140px; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text);
+      font-family: 'Cairo', sans-serif; font-size: 0.9rem;
+    }
+    .font-control {
+      display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-muted);
+    }
+    .font-control button {
+      width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-weight: 700; cursor: pointer;
+    }
+
+    .view { display: none; padding: 14px; max-width: 820px; margin: 0 auto; }
+    .view.active { display: block; }
+
+    .surah-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+    .surah-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: transform 0.15s;
+    }
+    .surah-card:active { transform: scale(0.98); }
+    .surah-num {
+      width: 36px; height: 36px; border-radius: 10px; background: var(--primary);
+      color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;
+    }
+    .surah-info { flex: 1; margin: 0 12px; }
+    .surah-name { font-weight: 700; font-size: 1rem; }
+    .surah-meta { font-size: 0.78rem; color: var(--text-muted); }
+    .dl-btn {
+      border: 1px solid var(--border); background: var(--bg); color: var(--primary);
+      padding: 6px 10px; border-radius: 8px; font-size: 0.78rem; font-family: 'Cairo', sans-serif;
+      cursor: pointer; font-weight: 600;
+    }
+    .dl-btn.downloaded { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .reader-header {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px; text-align: center; margin-bottom: 14px;
+    }
+    .bismillah {
+      font-family: 'Amiri Quran', serif; font-size: 1.7rem; color: var(--primary);
+      margin-top: 8px;
+    }
+    .ayah-container {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 18px 16px; line-height: 2.35; text-align: justify;
+      font-family: 'Amiri Quran', serif; font-size: var(--quran-font-size);
+    }
+    .ayah-span {
+      cursor: pointer; padding: 2px 4px; border-radius: 6px; transition: background 0.15s;
+    }
+    .ayah-span:hover, .ayah-span.selected { background: rgba(15, 118, 110, 0.15); }
+    .ayah-num {
+      display: inline-block; font-family: 'Cairo', sans-serif; font-size: 0.6em;
+      color: var(--accent); border: 1px solid var(--accent); border-radius: 99px;
+      padding: 0 7px; margin: 0 4px; line-height: 1.6; vertical-align: middle;
+    }
+
+    .tj-ghunnah { color: #d97706; font-weight: 600; }
+    .tj-ikhfa { color: #16a34a; font-weight: 600; }
+    .tj-idgham { color: #2563eb; font-weight: 600; }
+    .tj-qalqalah { color: #dc2626; font-weight: 600; }
+    .tj-madd { color: #9333ea; font-weight: 600; }
+
+    .audio-bar {
+      position: fixed; bottom: 58px; left: 0; right: 0; z-index: 45;
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 8px 14px; display: flex; flex-direction: column; gap: 6px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+    }
+    .audio-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .audio-title { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    audio { width: 100%; height: 34px; }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; height: 58px;
+      background: var(--surface); border-top: 1px solid var(--border);
+      display: flex; justify-content: space-around; align-items: center;
+    }
+    .nav-item {
+      background: none; border: none; color: var(--text-muted);
+      font-family: 'Cairo', sans-serif; font-size: 0.78rem; font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
+    }
+    .nav-item.active { color: var(--primary); }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
+      display: none; align-items: flex-end; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .sheet {
+      background: var(--surface); width: 100%; max-width: 720px; max-height: 80vh;
+      border-radius: 18px 18px 0 0; padding: 16px; overflow-y: auto;
+    }
+    .sheet-tabs { display: flex; gap: 8px; margin: 12px 0; }
+    .sheet-tab {
+      flex: 1; padding: 8px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif;
+      font-weight: 700; cursor: pointer;
+    }
+    .sheet-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .sheet-body { font-size: 0.98rem; line-height: 1.9; color: var(--text); }
+
+    .prayer-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-bottom: 12px;
+    }
+    .prayer-row {
+      display: flex; justify-content: space-between; padding: 10px 0;
+      border-bottom: 1px dashed var(--border); font-weight: 600;
+    }
+    .prayer-row:last-child { border-bottom: none; }
+    .btn-primary {
+      background: var(--primary); color: #fff; border: none; padding: 10px 16px;
+      border-radius: 10px; font-family: 'Cairo', sans-serif; font-weight: 700; cursor: pointer;
+    }
+    .progress-bar {
+      width: 100%; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 6px; display: none;
+    }
+    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.2s; }
+  </style>
+</head>
+<body data-theme="sepia">
+
+<header>
+  <div class="brand">📖 مصحف النور <span class="badge">رواية ورش</span></div>
+  <div class="header-actions">
+    <button class="icon-btn" onclick="cycleTheme()" title="تغيير الثيم">🌓</button>
+    <button class="icon-btn" onclick="goToBookmark()" title="آخر آية">🔖</button>
+  </div>
+</header>
+
+<div class="controls-bar">
+  <select id="reciterSelect" onchange="onReciterChange()"></select>
+  <div class="font-control">
+    <span>الخط:</span>
+    <button onclick="changeFontSize(-2)">-</button>
+    <span id="fontSizeLabel">26</span>
+    <button onclick="changeFontSize(2)">+</button>
+  </div>
+</div>
+
+<section id="view-surahs" class="view active">
+  <div style="margin-bottom: 12px; display:flex; gap:8px;">
+    <input type="search" id="surahSearch" placeholder="ابحث عن سورة..." oninput="renderSurahList()"
+           style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:'Cairo';">
+  </div>
+  <div class="progress-bar" id="dlProgressWrap"><div class="progress-fill" id="dlProgressFill"></div></div>
+  <div id="dlStatusText" style="font-size:0.8rem; color:var(--primary); margin:4px 0 10px; text-align:center;"></div>
+  <div class="surah-grid" id="surahGrid">جاري تحميل السور...</div>
+</section>
+
+<section id="view-reader" class="view">
+  <div class="reader-header">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <button class="dl-btn" onclick="switchView('surahs')">⬅️ السور</button>
+      <h2 id="readerSurahTitle" style="font-size:1.2rem;">سورة الفاتحة</h2>
+      <button class="dl-btn" id="readerPlayBtn" onclick="playCurrentSurah()">▶️ استماع</button>
+    </div>
+    <div class="bismillah" id="readerBismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    <div style="font-size:0.78rem; color:var(--text-muted); margin-top:6px;">
+      اضغط على أي آية لعرض <b>التفسير</b> و<b>الإعراب</b> و<b>أحكام التجويد</b>
+    </div>
+  </div>
+  <div class="ayah-container" id="ayahContainer">جاري تحميل الآيات برواية ورش...</div>
+</section>
+
+<section id="view-adhan" class="view">
+  <div class="prayer-card">
+    <h3 style="margin-bottom:8px;">🕌 مواقيت الصلاة والأذان (GPS)</h3>
+    <p id="locationStatus" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+      اضغط لتحديد موقعك وحساب أوقات الصلاة بدقة (توقيت وزارة الأوقاف المغربية)
+    </p>
+    <button class="btn-primary" onclick="fetchPrayerTimesGPS()">📍 تحديد الموقع بالـ GPS</button>
+    <div id="prayerTimesList" style="margin-top:14px;"></div>
+  </div>
+
+  <div class="prayer-card">
+    <h3 style="margin-bottom:8px;">🔊 صوت المؤذن</h3>
+    <select id="adhanVoiceSelect" onchange="saveAdhanVoice()"
+            style="width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-family:'Cairo'; margin-bottom:10px;">
+      <option value="https://www.islamcan.com/audio/adhan/azan1.mp3">أذان المسجد الحرام (مكة)</option>
+      <option value="https://www.islamcan.com/audio/adhan/azan2.mp3">أذان المسجد النبوي (المدينة)</option>
+      <option value="https://www.islamcan.com/audio/adhan/azan15.mp3">أذان المسجد الأقصى</option>
+      <option value="https://www.islamcan.com/audio/adhan/azan19.mp3">أذان الشيخ عبد الباسط</option>
+      <option value="https://www.islamcan.com/audio/adhan/azan20.mp3">الأذان المغربي / الأندلسي</option>
+    </select>
+    <button class="dl-btn" onclick="testAdhanAudio()">▶️ تجربة صوت الأذان</button>
+    <button class="dl-btn" onclick="stopAdhanAudio()">⏹️ إيقاف</button>
+  </div>
+</section>
+
+<div class="audio-bar">
+  <div class="audio-top">
+    <div class="audio-title" id="audioTitle">اختر سورة للاستماع</div>
+    <span id="offlineBadge" style="font-size:0.75rem; color:var(--primary); font-weight:700;"></span>
+  </div>
+  <audio id="audioPlayer" controls preload="none"></audio>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-surahs" onclick="switchView('surahs')"><span>📚</span><span>السور</span></button>
+  <button class="nav-item" id="nav-reader" onclick="switchView('reader')"><span>📖</span><span>المصحف</span></button>
+  <button class="nav-item" id="nav-adhan" onclick="switchView('adhan')"><span>🕌</span><span>الأذان GPS</span></button>
+</nav>
+
+<div class="modal-backdrop" id="ayahModal" onclick="if(event.target===this) closeModal()">
+  <div class="sheet">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 id="modalTitle">تفاصيل الآية</h3>
+      <button class="dl-btn" onclick="closeModal()">إغلاق ✖</button>
+    </div>
+    <p id="modalAyahText" style="font-family:'Amiri Quran',serif; font-size:1.5rem; margin:10px 0; color:var(--primary);"></p>
+    <div class="sheet-tabs">
+      <button class="sheet-tab active" onclick="loadAyahTab('tafsir', this)">التفسير</button>
+      <button class="sheet-tab" onclick="loadAyahTab('irab', this)">الإعراب</button>
+      <button class="sheet-tab" onclick="loadAyahTab('tajweed', this)">التجويد</button>
+    </div>
+    <div class="sheet-body" id="modalBody">جاري التحميل...</div>
+  </div>
+</div>
+
+<script>
+  const RECITERS = [
+    { id: 'omar_warsh', name: 'عمر القزابري (ورش)', url: 'https://server9.mp3quran.net/omar_warsh/' },
+    { id: 'koshi_warsh', name: 'العيون الكوشي (ورش)', url: 'https://server11.mp3quran.net/koshi/' },
+    { id: 'yassin_warsh', name: 'ياسين الجزائري (ورش)', url: 'https://server11.mp3quran.net/qari/' },
+    { id: 'dosri_warsh', name: 'إبراهيم الدوسري (ورش)', url: 'https://server10.mp3quran.net/ibrahim_dosri/Rewayat-Warsh-A-n-Nafi/' },
+    { id: 'belalya_warsh', name: 'رشيد بلعالية (ورش)', url: 'https://server6.mp3quran.net/bl3/Rewayat-Warsh-A-n-Nafi/' },
+    { id: 'basit', name: 'عبد الباسط عبد الصمد (مجود)', url: 'https://server7.mp3quran.net/basit/Almusshaf-Al-Mojawwad/' },
+    { id: 'maher', name: 'ماهر المعيقلي', url: 'https://server12.mp3quran.net/maher/' },
+    { id: 'afasy', name: 'مشاري العفاسي', url: 'https://server8.mp3quran.net/afs/' }
+  ];
+
+  const AUDIO_CACHE = 'mushaf-noor-audio-v2';
+  let surahs = [];
+  let currentSurah = 1;
+  let selectedAyah = { surah: 1, ayah: 1, text: '' };
+  let adhanAudioObj = new Audio();
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    initReciters();
+    loadSettings();
+    await fetchSurahList();
+  });
+
+  function initReciters() {
+    const sel = document.getElementById('reciterSelect');
+    const saved = localStorage.getItem('reciter_id') || RECITERS[0].id;
+    sel.innerHTML = RECITERS.map(r => `<option value="${r.id}" ${r.id===saved?'selected':''}>🎙️ ${r.name}</option>`).join('');
+  }
+
+  function getSelectedReciter() {
+    const id = document.getElementById('reciterSelect').value;
+    return RECITERS.find(r => r.id === id) || RECITERS[0];
+  }
+
+  function onReciterChange() {
+    localStorage.setItem('reciter_id', document.getElementById('reciterSelect').value);
+    renderSurahList();
+  }
+
+  function loadSettings() {
+    const size = parseInt(localStorage.getItem('quran_font_size') || '26', 10);
+    document.documentElement.style.setProperty('--quran-font-size', size + 'px');
+    document.getElementById('fontSizeLabel').textContent = size;
+
+    const theme = localStorage.getItem('app_theme') || 'sepia';
+    document.body.setAttribute('data-theme', theme);
+
+    const savedAdhan = localStorage.getItem('adhan_voice');
+    if (savedAdhan) document.getElementById('adhanVoiceSelect').value = savedAdhan;
+  }
+
+  function changeFontSize(delta) {
+    let size = parseInt(localStorage.getItem('quran_font_size') || '26', 10) + delta;
+    size = Math.max(18, Math.min(44, size));
+    localStorage.setItem('quran_font_size', size);
+    document.documentElement.style.setProperty('--quran-font-size', size + 'px');
+    document.getElementById('fontSizeLabel').textContent = size;
+  }
+
+  function cycleTheme() {
+    const themes = ['sepia', 'light', 'dark'];
+    const cur = document.body.getAttribute('data-theme') || 'sepia';
+    const next = themes[(themes.indexOf(cur) + 1) % themes.length];
+    document.body.setAttribute('data-theme', next);
+    localStorage.setItem('app_theme', next);
+  }
+
+  function switchView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+  }
+
+  async function fetchSurahList() {
+    const cached = localStorage.getItem('surah_list_v1');
+    if (cached) {
+      surahs = JSON.parse(cached);
+      renderSurahList();
+    }
+    try {
+      const res = await fetch('https://api.alquran.cloud/v1/surah');
+      const json = await res.json();
+      if (json.data) {
+        surahs = json.data;
+        localStorage.setItem('surah_list_v1', JSON.stringify(surahs));
+        renderSurahList();
+      }
+    } catch (e) {
+      if (!surahs.length) document.getElementById('surahGrid').innerHTML = 'تعذر تحميل السور، تحقق من الإنترنت.';
+    }
+  }
+
+  function getAudioUrl(surahNum) {
+    const rec = getSelectedReciter();
+    const padded = String(surahNum).padStart(3, '0');
+    return `${rec.url}${padded}.mp3`;
+  }
+
+  async function isAudioCached(url) {
+    if (!('caches' in window)) return false;
+    const cache = await caches.open(AUDIO_CACHE);
+    return !!(await cache.match(url));
+  }
+
+  async function renderSurahList() {
+    const q = (document.getElementById('surahSearch').value || '').trim();
+    const grid = document.getElementById('surahGrid');
+    const filtered = surahs.filter(s => s.name.includes(q) || String(s.number) === q);
+
+    const cards = await Promise.all(filtered.map(async s => {
+      const url = getAudioUrl(s.number);
+      const cached = await isAudioCached(url);
+      return `
+        <div class="surah-card" onclick="openSurah(${s.number})">
+          <div class="surah-num">${s.number}</div>
+          <div class="surah-info">
+            <div class="surah-name">${s.name}</div>
+            <div class="surah-meta">${s.revelationType === 'Meccan' ? 'مكية' : 'مدنية'} • ${s.numberOfAyahs} آية</div>
+          </div>
+          <button class="dl-btn ${cached ? 'downloaded' : ''}"
+                  onclick="event.stopPropagation(); toggleDownload(${s.number}, '${s.name}')">
+            ${cached ? '✅ محمل' : '⬇️ تحميل'}
+          </button>
+        </div>`;
+    }));
+    grid.innerHTML = cards.join('');
+  }
+
+  async function toggleDownload(surahNum, surahName) {
+    if (!('caches' in window)) return alert('التخزين المحلي غير مدعوم في هذا المتصفح');
+    const url = getAudioUrl(surahNum);
+    const cache = await caches.open(AUDIO_CACHE);
+    const exists = await cache.match(url);
+
+    if (exists) {
+      if (confirm(`هل تريد حذف التلاوة المحملة لـ ${surahName}؟`)) {
+        await cache.delete(url);
+        renderSurahList();
+      }
+      return;
+    }
+
+    const wrap = document.getElementById('dlProgressWrap');
+    const fill = document.getElementById('dlProgressFill');
+    const status = document.getElementById('dlStatusText');
+    wrap.style.display = 'block';
+    fill.style.width = '10%';
+    status.textContent = `جاري تحميل ${surahName} للاستماع بدون إنترنت...`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('فشل التحميل');
+      const total = parseInt(response.headers.get('content-length') || '0', 10);
+      const reader = response.body.getReader();
+      let loaded = 0;
+      const chunks = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        loaded += value.length;
+        if (total) fill.style.width = Math.round((loaded / total) * 100) + '%';
+      }
+
+      const blob = new Blob(chunks, { type: 'audio/mpeg' });
+      await cache.put(url, new Response(blob, { headers: { 'Content-Type': 'audio/mpeg' } }));
+      fill.style.width = '100%';
+      status.textContent = `✅ تم تحميل ${surahName} بنجاح (يعمل بدون إنترنت)`;
+      renderSurahList();
+      setTimeout(() => { wrap.style.display = 'none'; status.textContent = ''; }, 2500);
+    } catch (err) {
+      status.textContent = '❌ تعذر التحميل، تأكد من الاتصال بالإنترنت.';
+      setTimeout(() => { wrap.style.display = 'none'; }, 2500);
+    }
+  }
+
+  async function openSurah(num) {
+    currentSurah = num;
+    switchView('reader');
+    const surahMeta = surahs.find(s => s.number === num) || { name: 'سورة ' + num };
+    document.getElementById('readerSurahTitle').textContent = surahMeta.name;
+    document.getElementById('readerBismillah').style.display = (num === 9) ? 'none' : 'block';
+    const container = document.getElementById('ayahContainer');
+    container.innerHTML = 'جاري تحميل الآيات برواية ورش...';
+
+    const cacheKey = `warsh_surah_${num}`;
+    let ayahs = null;
+
+    if (localStorage.getItem(cacheKey)) {
+      ayahs = JSON.parse(localStorage.getItem(cacheKey));
+    } else {
+      try {
+        const res = await fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranwarsh/${num}.json`);
+        if (!res.ok) throw new Error('fallback');
+        const json = await res.json();
+        ayahs = json.chapter.map(a => ({ numberInSurah: a.verse, text: a.text }));
+        localStorage.setItem(cacheKey, JSON.stringify(ayahs));
+      } catch (e) {
+        const res2 = await fetch(`https://api.alquran.cloud/v1/surah/${num}/quran-uthmani`);
+        const json2 = await res2.json();
+        ayahs = json2.data.ayahs.map(a => ({ numberInSurah: a.numberInSurah, text: a.text }));
+      }
+    }
+
+    container.innerHTML = ayahs.map(a => `
+      <span class="ayah-span" onclick="openAyahDetails(${num}, ${a.numberInSurah}, this.dataset.text)" data-text="${a.text.replace(/"/g, '&quot;')}">
+        ${a.text} <span class="ayah-num">${a.numberInSurah}</span>
+      </span>
+    `).join(' ');
+  }
+
+  async function playCurrentSurah() {
+    const url = getAudioUrl(currentSurah);
+    const surahMeta = surahs.find(s => s.number === currentSurah) || { name: 'سورة ' + currentSurah };
+    const rec = getSelectedReciter();
+    const player = document.getElementById('audioPlayer');
+    document.getElementById('audioTitle').textContent = `${surahMeta.name} — ${rec.name}`;
+
+    if ('caches' in window) {
+      const cache = await caches.open(AUDIO_CACHE);
+      const match = await cache.match(url);
+      if (match) {
+        const blob = await match.blob();
+        player.src = URL.createObjectURL(blob);
+        document.getElementById('offlineBadge').textContent = 'بدون إنترنت ✅';
+        player.play();
+        return;
+      }
+    }
+    document.getElementById('offlineBadge').textContent = 'بث مباشر 🌐';
+    player.src = url;
+    player.play();
+  }
+
+  function openAyahDetails(surah, ayah, text) {
+    selectedAyah = { surah, ayah, text };
+    localStorage.setItem('bookmark', JSON.stringify({ surah, ayah }));
+    document.getElementById('modalTitle').textContent = `الآية ${ayah} من سورة ${surahs.find(s=>s.number===surah)?.name || surah}`;
+    document.getElementById('modalAyahText').textContent = text;
+    document.getElementById('ayahModal').classList.add('open');
+    const firstTab = document.querySelector('.sheet-tab');
+    loadAyahTab('tafsir', firstTab);
+  }
+
+  function closeModal() { document.getElementById('ayahModal').classList.remove('open'); }
+
+  function goToBookmark() {
+    const bm = JSON.parse(localStorage.getItem('bookmark') || 'null');
+    if (bm) openSurah(bm.surah);
+    else alert('لم تقم بحفظ أي آية بعد. اضغط على أي آية لحفظ مكانك.');
+  }
+
+  async function loadAyahTab(type, btn) {
+    document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const body = document.getElementById('modalBody');
+    body.innerHTML = 'جاري جلب البيانات...';
+
+    const { surah, ayah } = selectedAyah;
+    try {
+      if (type === 'tafsir') {
+        const [r1, r2] = await Promise.all([
+          fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${ayah}/ar.muyassar`).then(r => r.json()),
+          fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${ayah}/ar.jalalayn`).then(r => r.json())
+        ]);
+        body.innerHTML = `
+          <h4 style="color:var(--primary); margin-bottom:6px;">📘 التفسير الميسر:</h4>
+          <p style="margin-bottom:14px;">${r1.data?.text || 'غير متوفر'}</p>
+          <h4 style="color:var(--primary); margin-bottom:6px;">📗 تفسير الجلالين:</h4>
+          <p>${r2.data?.text || 'غير متوفر'}</p>`;
+      } else if (type === 'irab') {
+        const res = await fetch(`https://api.quran-tafseer.com/tafseer/7/${surah}/${ayah}`);
+        if (res.ok) {
+          const data = await res.json();
+          body.innerHTML = `<h4 style="color:var(--primary); margin-bottom:6px;">📝 إعراب الآية:</h4><p>${data.text}</p>`;
+        } else {
+          body.innerHTML = `<p>إعراب هذه الآية غير متوفر حالياً من السيرفر، تأكد من الاتصال بالإنترنت.</p>`;
+        }
+      } else if (type === 'tajweed') {
+        const res = await fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${ayah}/quran-tajweed`);
+        const json = await res.json();
+        const colored = parseTajweed(json.data?.text || selectedAyah.text);
+        body.innerHTML = `
+          <div style="font-family:'Amiri Quran',serif; font-size:1.7rem; line-height:2.2; margin-bottom:12px;">${colored}</div>
+          <div style="font-size:0.82rem; display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid var(--border); padding-top:10px;">
+            <span class="tj-ghunnah">● غنة</span>
+            <span class="tj-ikhfa">● إخفاء</span>
+            <span class="tj-idgham">● إدغام</span>
+            <span class="tj-qalqalah">● قلقلة</span>
+            <span class="tj-madd">● مد</span>
+          </div>`;
+      }
+    } catch (e) {
+      body.innerHTML = 'تعذر تحميل البيانات. تأكد من اتصالك بالإنترنت.';
+    }
+  }
+
+  function parseTajweed(raw) {
+    return raw
+      .replace(/\[g(?::\d+)?\[([^\]]+)\]/g, '<span class="tj-ghunnah">$1</span>')
+      .replace(/\[f(?::\d+)?\[([^\]]+)\]/g, '<span class="tj-ikhfa">$1</span>')
+      .replace(/\[i(?::\d+)?\[([^\]]+)\]/g, '<span class="tj-idgham">$1</span>')
+      .replace(/\[q(?::\d+)?\[([^\]]+)\]/g, '<span class="tj-qalqalah">$1</span>')
+      .replace(/\[[mnpo](?::\d+)?\[([^\]]+)\]/g, '<span class="tj-madd">$1</span>')
+      .replace(/\[[a-z](?::\d+)?\[([^\]]+)\]/g, '$1');
+  }
+
+  function fetchPrayerTimesGPS() {
+    const status = document.getElementById('locationStatus');
+    if (!navigator.geolocation) {
+      status.textContent = 'GPS غير مدعوم على هذا الجهاز.';
+      return;
+    }
+    status.textContent = 'جاري تحديد موقعك عبر GPS...';
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const { latitude, longitude } = pos.coords;
+      status.textContent = `تم تحديد الموقع (${latitude.toFixed(3)}, ${longitude.toFixed(3)})`;
+
+      if (window.AndroidBridge && window.AndroidBridge.scheduleAdhan) {
+        window.AndroidBridge.scheduleAdhan(latitude, longitude, document.getElementById('adhanVoiceSelect').value);
+      }
+
+      try {
+        const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=21`);
+        const json = await res.json();
+        const t = json.data.timings;
+        const names = { Fajr:'الفجر', Sunrise:'الشروق', Dhuhr:'الظهر', Asr:'العصر', Maghrib:'المغرب', Isha:'العشاء' };
+        document.getElementById('prayerTimesList').innerHTML = Object.keys(names).map(k => `
+          <div class="prayer-row"><span>${names[k]}</span><span>${t[k]}</span></div>
+        `).join('');
+      } catch (e) {
+        status.textContent = 'تعذر جلب أوقات الصلاة، تحقق من الإنترنت.';
+      }
+    }, () => {
+      status.textContent = 'يرجى تفعيل صلاحية الموقع (GPS) من إعدادات الهاتف.';
+    });
+  }
+
+  function saveAdhanVoice() {
+    const url = document.getElementById('adhanVoiceSelect').value;
+    localStorage.setItem('adhan_voice', url);
+    if (window.AndroidBridge && window.AndroidBridge.setAdhanVoice) {
+      window.AndroidBridge.setAdhanVoice(url);
+    }
+  }
+  function testAdhanAudio() {
+    adhanAudioObj.src = document.getElementById('adhanVoiceSelect').value;
+    adhanAudioObj.play();
+  }
+  function stopAdhanAudio() { adhanAudioObj.pause(); adhanAudioObj.currentTime = 0; }
+</script>
+</body>
+</html>
